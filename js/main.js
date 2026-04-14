@@ -363,71 +363,64 @@ function initTyping() {
 }
 
 // ==========================================
-// EMAILJS INITIALIZATION
-// ==========================================
-(function() {
-    emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your EmailJS public key
-})();
-
-// ==========================================
-// CONTACT FORM WITH EMAILJS
+// CONTACT FORM — sends via FormSubmit (free, no setup needed)
 // ==========================================
 function handleEmailJSSubmit(event) {
     event.preventDefault();
-    
-    const btn = event.target.querySelector('button[type="submit"]');
     const form = event.target;
-    
-    if (btn) {
-        const origHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>...Sending</span>';
-        btn.disabled = true;
-        
-        // Send email using EmailJS
-        emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
-            from_name: form.user_name.value,
-            from_email: form.user_email.value,
-            message: form.message.value,
-            to_email: 'abdulrahman.mhm1@gmail.com'
+    const btn = form.querySelector('button[type="submit"]');
+    const origHTML = btn.innerHTML;
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>...Sending</span>';
+    btn.disabled = true;
+
+    // Use FormSubmit (free, no API key needed)
+    fetch('https://formsubmit.co/ajax/abdulrahman.mhm1@gmail.com', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            name: form.user_name.value,
+            email: form.user_email.value,
+            message: form.message.value
         })
-        .then(function(response) {
-            console.log('SUCCESS!', response.status, response.text);
-            btn.innerHTML = '<i class="fas fa-check"></i> <span>Sent!</span>';
-            btn.style.background = '#22c55e';
-            
-            showToast(
-                isArabic 
-                    ? 'Your message has been sent successfully! I will get back to you soon! ?' 
-                    : 'Message sent! I\'ll get back to you soon ?'
-            );
-            
-            // Reset form after 2 seconds
-            setTimeout(() => {
-                form.reset();
-                btn.innerHTML = origHTML;
-                btn.disabled = false;
-                btn.style.background = '';
-            }, 3000);
-        })
-        .catch(function(error) {
-            console.log('FAILED...', error);
-            btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Error</span>';
-            btn.style.background = '#e63946';
-            
-            showToast(
-                isArabic 
-                    ? 'Failed to send message. Please try again.' 
-                    : 'Failed to send message. Please try again.'
-            );
-            
-            // Reset button after 2 seconds
-            setTimeout(() => {
-                btn.innerHTML = origHTML;
-                btn.disabled = false;
-                btn.style.background = '';
-            }, 3000);
-        });
-    }
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.innerHTML = '<i class="fas fa-check"></i> <span>Sent!</span>';
+        btn.style.background = '#22c55e';
+
+        showToast(
+            isArabic
+                ? 'تم إرسال رسالتك بنجاح! سأتواصل معك قريباً 🤍'
+                : 'Message sent successfully! I\'ll get back to you soon 🤍'
+        );
+
+        setTimeout(() => {
+            form.reset();
+            btn.innerHTML = origHTML;
+            btn.disabled = false;
+            btn.style.background = '';
+        }, 3000);
+    })
+    .catch(error => {
+        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Error</span>';
+        btn.style.background = '#e63946';
+
+        showToast(
+            isArabic
+                ? 'فشل الإرسال. يرجى المحاولة مرة أخرى.'
+                : 'Failed to send. Please try again.'
+        );
+
+        setTimeout(() => {
+            btn.innerHTML = origHTML;
+            btn.disabled = false;
+            btn.style.background = '';
+        }, 3000);
+    });
 }
 
 // ==========================================
